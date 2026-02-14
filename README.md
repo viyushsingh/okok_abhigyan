@@ -8,7 +8,7 @@
 
 **A gamified student productivity and lifestyle management platform**
 
-[Features](#-features) • [Screenshots](#-screenshots) • [Installation](#-installation) • [Tech Stack](#-tech-stack) • [Demo](#-demo)
+[Features](#-features) • [Screenshots](#-screenshots) • [Installation](#-installation) • [Tech Stack](#-tech-stack) 
 
 </div>
 
