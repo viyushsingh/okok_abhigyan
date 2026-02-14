@@ -228,7 +228,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you like this project, please ⭐ star it on GitHub!
 
 For questions or support:
-- 📧 Email: support@skillera.com
+- 📧 Email: viyushsingh@gmail.com
 - 💬 Issues: [GitHub Issues](https://github.com/yourusername/skillera/issues)
 
 ---
