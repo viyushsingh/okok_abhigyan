@@ -3,11 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>project okok| Abhigyan 4.0</title>
+    <title>Abhigyan 4.0 – Skill Tree & Diary</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    
+    <header class="header">
+        <h1 class="logo">Abhigyan 4.0</h1>
+        <p class="header-hint">Explore: Diary, Timetable, Broken Trophy Room</p>
+        <nav class="nav">
+            <button type="button" class="nav-btn active" data-section="skill-tree">Skill Tree</button>
+            <button type="button" class="nav-btn" data-section="diary">Diary</button>
+            <button type="button" class="nav-btn" data-section="timetable">Timetable</button>
+            <button type="button" class="nav-btn" data-section="trophies">Broken Trophy Room</button>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section id="section-skill-tree" class="section active">
+            <div class="tree-container">
+                <div id="skill-tree-root" class="tree-root">
+                    <div class="flowchart-fallback" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem;text-align:center;">
+                        <span class="flowchart-node flowchart-node-root" style="font-size:1.25rem;font-weight:600;padding:0.75rem 1.5rem;border:2px solid #2563eb;border-radius:8px;color:#1a1a1a;background:#fff;">You</span>
+                        <p class="flowchart-fallback-hint" style="margin:0;font-size:0.95rem;color:#666;">Click to add your first skill</p>
+                        <button type="button" id="fallback-add-branch" style="padding:0.5rem 1rem;border-radius:8px;font-size:0.9rem;cursor:pointer;background:#2563eb;color:#fff;border:none;">+ Add main branch</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-diary" class="section">
+            <div class="diary-toolbar">
+                <button type="button" id="diary-prev" class="btn btn-ghost">← Prev</button>
+                <input type="date" id="diary-date" class="diary-date-input">
+                <button type="button" id="diary-next" class="btn btn-ghost">Next →</button>
+                <button type="button" id="diary-today" class="btn btn-ghost">Today</button>
+            </div>
+            <textarea id="diary-content" class="diary-textarea" placeholder="What happened today?"></textarea>
+            <p class="diary-hint">Entries are saved automatically.</p>
+        </section>
+
+        <section id="section-timetable" class="section">
+            <div class="timetable-header">
+                <h2>Your Week</h2>
+                <button type="button" id="timetable-add" class="btn btn-primary">Add slot</button>
+            </div>
+            <div id="timetable-grid" class="timetable-grid"></div>
+            <div id="timetable-empty" class="empty-state hidden">No slots yet. Add one to get started.</div>
+        </section>
+
+        <section id="section-trophies" class="section">
+            <div class="trophies-header">
+                <h2>Broken Trophy Room</h2>
+                <p class="trophies-tagline">Failures are lessons. Log them, learn, move on.</p>
+                <button type="button" id="trophy-add" class="btn btn-primary">Add failure / setback</button>
+            </div>
+            <div id="trophies-list" class="trophies-list"></div>
+            <div id="trophies-empty" class="empty-state hidden">No entries yet. Add a setback and what you learned.</div>
+        </section>
+    </main>
+
+    <!-- Modal: add / rename branch -->
+    <div id="modal-branch" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-branch-title">Add main branch</h3>
+            <label>Name</label>
+            <input type="text" id="modal-branch-name" placeholder="e.g. Academics">
+            <div class="modal-actions">
+                <button type="button" id="modal-branch-save" class="btn btn-primary">Add</button>
+                <button type="button" id="modal-branch-cancel" class="btn btn-ghost">Cancel</button>
+                <button type="button" id="modal-branch-delete" class="btn btn-danger hidden">Delete branch</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: edit skill progress -->
+    <div id="modal-skill" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-skill-title">Skill progress</h3>
+            <label>Progress (0–100)</label>
+            <input type="number" id="modal-skill-progress" min="0" max="100" value="0">
+            <label>Note (optional)</label>
+            <input type="text" id="modal-skill-note" placeholder="Short note">
+            <div class="modal-actions">
+                <button type="button" id="modal-skill-save" class="btn btn-primary">Save</button>
+                <button type="button" id="modal-skill-cancel" class="btn btn-ghost">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: add/edit timetable slot -->
+    <div id="modal-slot" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-slot-title">Add slot</h3>
+            <label>Day</label>
+            <select id="modal-slot-day">
+                <option value="0">Monday</option>
+                <option value="1">Tuesday</option>
+                <option value="2">Wednesday</option>
+                <option value="3">Thursday</option>
+                <option value="4">Friday</option>
+                <option value="5">Saturday</option>
+                <option value="6">Sunday</option>
+            </select>
+            <label>Start time</label>
+            <input type="time" id="modal-slot-start">
+            <label>End time</label>
+            <input type="time" id="modal-slot-end">
+            <label>Label</label>
+            <input type="text" id="modal-slot-label" placeholder="e.g. Math class">
+            <div class="modal-actions">
+                <button type="button" id="modal-slot-save" class="btn btn-primary">Save</button>
+                <button type="button" id="modal-slot-cancel" class="btn btn-ghost">Cancel</button>
+                <button type="button" id="modal-slot-delete" class="btn btn-danger hidden">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: add/edit broken trophy -->
+    <div id="modal-trophy" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-trophy-title">Add setback</h3>
+            <label>Title</label>
+            <input type="text" id="modal-trophy-title-input" placeholder="e.g. Missed deadline">
+            <label>What happened</label>
+            <textarea id="modal-trophy-what" placeholder="Brief description"></textarea>
+            <label>What I learned</label>
+            <textarea id="modal-trophy-learned" placeholder="Takeaway"></textarea>
+            <div class="modal-actions">
+                <button type="button" id="modal-trophy-save" class="btn btn-primary">Save</button>
+                <button type="button" id="modal-trophy-cancel" class="btn btn-ghost">Cancel</button>
+                <button type="button" id="modal-trophy-delete" class="btn btn-danger hidden">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
