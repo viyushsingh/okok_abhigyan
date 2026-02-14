@@ -3,141 +3,1056 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abhigyan 4.0 – Skill Tree & Diary</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>SKILLera - Level Up Your Life</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Dark theme (default) */
+        body.dark {
+            background: #0f0f0f;
+            color: white;
+        }
+        
+        /* Light theme */
+        body.light {
+            background: #f5f5f5;
+            color: #1f2937;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 87, 34, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(255, 87, 34, 0.8); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .skill-node:hover { 
+            transform: scale(1.15) translateY(-8px) rotate(2deg); 
+            filter: brightness(1.3);
+        }
+        
+        .skill-node { 
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: pointer; 
+        }
+        
+        .nav-item:hover { 
+            transform: translateX(8px) scale(1.05); 
+        }
+        
+        .nav-item { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .category-node { 
+            animation: float 3s ease-in-out infinite; 
+        }
+        
+        .mission-card {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        .stat-card {
+            animation: bounceIn 0.6s ease-out;
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255,255,255,0.1), 
+                transparent
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .sidebar { 
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .skill-tree-canvas {
+                transform: scale(0.6);
+                transform-origin: top left;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #ff5722; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f4511e; }
+        
+        body.light ::-webkit-scrollbar-track { background: #e5e5e5; }
+        body.light ::-webkit-scrollbar-thumb { background: #ff8a65; }
+        
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+        }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            border-radius: 6px;
+            white-space: nowrap;
+            font-size: 12px;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; color: black; }
+        }
+    </style>
 </head>
-<body>
-    <header class="header">
-        <h1 class="logo">Abhigyan 4.0</h1>
-        <p class="header-hint">Explore: Diary, Timetable, Broken Trophy Room</p>
-        <nav class="nav">
-            <button type="button" class="nav-btn active" data-section="skill-tree">Skill Tree</button>
-            <button type="button" class="nav-btn" data-section="diary">Diary</button>
-            <button type="button" class="nav-btn" data-section="timetable">Timetable</button>
-            <button type="button" class="nav-btn" data-section="trophies">Broken Trophy Room</button>
-        </nav>
-    </header>
+<body class="dark">
+    <div id="root"></div>
 
-    <main class="main">
-        <section id="section-skill-tree" class="section active">
-            <div class="tree-container">
-                <div id="skill-tree-root" class="tree-root">
-                    <div class="flowchart-fallback" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem;text-align:center;">
-                        <span class="flowchart-node flowchart-node-root" style="font-size:1.25rem;font-weight:600;padding:0.75rem 1.5rem;border:2px solid #2563eb;border-radius:8px;color:#1a1a1a;background:#fff;">You</span>
-                        <p class="flowchart-fallback-hint" style="margin:0;font-size:0.95rem;color:#666;">Click to add your first skill</p>
-                        <button type="button" id="fallback-add-branch" style="padding:0.5rem 1rem;border-radius:8px;font-size:0.9rem;cursor:pointer;background:#2563eb;color:#fff;border:none;">+ Add main branch</button>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ==================== LOCAL STORAGE ====================
+        const loadFromStorage = (key, defaultValue) => {
+            try {
+                const saved = localStorage.getItem(key);
+                return saved ? JSON.parse(saved) : defaultValue;
+            } catch {
+                return defaultValue;
+            }
+        };
+
+        const saveToStorage = (key, value) => {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.error('Failed to save to localStorage', e);
+            }
+        };
+
+        // ==================== DATA ====================
+        const defaultUserData = {
+            username: "Nova Warrior",
+            email: "nova@skillera.com",
+            level: 24,
+            totalXp: 12450,
+            rank: "GOLD IV",
+            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=NovaWarrior",
+            joinDate: "2024-01-15"
+        };
+
+        const skillsData = [
+            {
+                id: 1,
+                name: "Academics",
+                icon: "📚",
+                category: "main",
+                color: "rgb(59,130,246)",
+                bgColor: "rgb(30,58,138)",
+                position: { x: 250, y: 220 },
+                children: [
+                    { name: "Mathematics", icon: "📐", unlocked: true, level: 3, maxLevel: 5, xp: 450, position: { x: 250, y: 360 } },
+                    { name: "Arithmetic", icon: "🔢", unlocked: true, level: 5, maxLevel: 5, xp: 500, position: { x: 190, y: 460 } },
+                    { name: "Algebra", icon: "📊", unlocked: true, level: 4, maxLevel: 5, xp: 380, position: { x: 250, y: 500 } },
+                    { name: "Calculus", icon: "∫", unlocked: false, level: 0, maxLevel: 5, xp: 0, position: { x: 310, y: 460 } }
+                ]
+            },
+            {
+                id: 2,
+                name: "Technology",
+                icon: "💻",
+                category: "main",
+                color: "rgb(16,185,129)",
+                bgColor: "rgb(6,78,59)",
+                position: { x: 450, y: 220 },
+                children: [
+                    { name: "Programming", icon: "💻", unlocked: true, level: 4, maxLevel: 5, xp: 420, position: { x: 450, y: 360 } },
+                    { name: "Python", icon: "🐍", unlocked: true, level: 3, maxLevel: 5, xp: 310, position: { x: 410, y: 460 } },
+                    { name: "JavaScript", icon: "⚡", unlocked: true, level: 4, maxLevel: 5, xp: 390, position: { x: 490, y: 500 } }
+                ]
+            },
+            {
+                id: 3,
+                name: "Health",
+                icon: "❤️",
+                category: "main",
+                color: "rgb(239,68,68)",
+                bgColor: "rgb(127,29,29)",
+                position: { x: 650, y: 220 },
+                children: [
+                    { name: "Fitness", icon: "💪", unlocked: true, level: 2, maxLevel: 5, xp: 210, position: { x: 650, y: 360 } },
+                    { name: "Nutrition", icon: "🥗", unlocked: true, level: 2, maxLevel: 5, xp: 180, position: { x: 610, y: 460 } }
+                ]
+            },
+            {
+                id: 4,
+                name: "Life Skills",
+                icon: "🎯",
+                category: "main",
+                color: "rgb(249,115,22)",
+                bgColor: "rgb(124,45,18)",
+                position: { x: 850, y: 220 },
+                children: [
+                    { name: "Time Management", icon: "⏰", unlocked: true, level: 3, maxLevel: 5, xp: 330, position: { x: 850, y: 360 } }
+                ]
+            }
+        ];
+
+        const defaultMissions = [
+            { id: 1, title: "Study for 30 minutes", completed: false, xp: 50, category: "daily", icon: "📖" },
+            { id: 2, title: "Complete 10 practice problems", completed: false, xp: 75, category: "daily", icon: "✏️" },
+            { id: 3, title: "Code for 1 hour", completed: false, xp: 100, category: "daily", icon: "⌨️" },
+            { id: 4, title: "Exercise for 30 minutes", completed: false, xp: 100, category: "daily", icon: "🏃" },
+            { id: 5, title: "Read 20 pages", completed: false, xp: 60, category: "daily", icon: "📚" },
+            { id: 6, title: "Drink 8 glasses of water", completed: false, xp: 40, category: "daily", icon: "💧" },
+            { id: 7, title: "Practice meditation", completed: false, xp: 70, category: "daily", icon: "🧘" }
+        ];
+
+        // ==================== COMPONENTS ====================
+        
+        function LoginPage({ onLogin }) {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [isSignUp, setIsSignUp] = useState(false);
+            const [username, setUsername] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (isSignUp && username) {
+                    const newUser = { ...defaultUserData, email, username };
+                    saveToStorage('user', newUser);
+                    onLogin(newUser);
+                } else {
+                    onLogin(loadFromStorage('user', defaultUserData));
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4" 
+                     style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}>
+                    <div className="w-full max-w-md" style={{animation: 'bounceIn 0.8s ease-out'}}>
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-800">
+                            {/* Logo */}
+                            <div className="text-center mb-8">
+                                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg mb-4">
+                                    <span className="text-4xl">⚡</span>
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">SKILLera</h1>
+                                <p className="text-gray-600 dark:text-gray-400">Level Up Your Life</p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                {isSignUp && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Username
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                            placeholder="Choose a username"
+                                            required={isSignUp}
+                                        />
+                                    </div>
+                                )}
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                        placeholder="your@email.com"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold py-3 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                                >
+                                    {isSignUp ? 'Create Account' : 'Login'}
+                                </button>
+                            </form>
+
+                            <div className="mt-6 text-center">
+                                <button
+                                    onClick={() => setIsSignUp(!isSignUp)}
+                                    className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                                >
+                                    {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign up"}
+                                </button>
+                            </div>
+
+                            <div className="mt-4 text-center">
+                                <button
+                                    onClick={() => onLogin(defaultUserData)}
+                                    className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                >
+                                    Continue as Guest
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            );
+        }
 
-        <section id="section-diary" class="section">
-            <div class="diary-toolbar">
-                <button type="button" id="diary-prev" class="btn btn-ghost">← Prev</button>
-                <input type="date" id="diary-date" class="diary-date-input">
-                <button type="button" id="diary-next" class="btn btn-ghost">Next →</button>
-                <button type="button" id="diary-today" class="btn btn-ghost">Today</button>
-            </div>
-            <textarea id="diary-content" class="diary-textarea" placeholder="What happened today?"></textarea>
-            <p class="diary-hint">Entries are saved automatically.</p>
-        </section>
+        function Navigation({ currentPage, setCurrentPage, isDark, toggleTheme, onLogout, isMobileMenuOpen, setIsMobileMenuOpen }) {
+            const navItems = [
+                { id: 'home', label: 'Skill Tree', icon: '🌳' },
+                { id: 'profile', label: 'Profile', icon: '👤' },
+                { id: 'missions', label: 'Missions', icon: '🎯' },
+                { id: 'timetable', label: 'Timetable', icon: '📅' },
+                { id: 'diary', label: 'Diary', icon: '📔' },
+                { id: 'achievements', label: 'Achievements', icon: '🏆' }
+            ];
 
-        <section id="section-timetable" class="section">
-            <div class="timetable-header">
-                <h2>Your Week</h2>
-                <button type="button" id="timetable-add" class="btn btn-primary">Add slot</button>
-            </div>
-            <div id="timetable-grid" class="timetable-grid"></div>
-            <div id="timetable-empty" class="empty-state hidden">No slots yet. Add one to get started.</div>
-        </section>
+            const userData = loadFromStorage('user', defaultUserData);
 
-        <section id="section-trophies" class="section">
-            <div class="trophies-header">
-                <h2>Broken Trophy Room</h2>
-                <p class="trophies-tagline">Failures are lessons. Log them, learn, move on.</p>
-                <button type="button" id="trophy-add" class="btn btn-primary">Add failure / setback</button>
-            </div>
-            <div id="trophies-list" class="trophies-list"></div>
-            <div id="trophies-empty" class="empty-state hidden">No entries yet. Add a setback and what you learned.</div>
-        </section>
-    </main>
+            return (
+                <div className={`sidebar fixed left-0 top-0 h-screen w-64 ${isDark ? 'bg-[#0f0f0f]' : 'bg-white'} border-r ${isDark ? 'border-gray-800' : 'border-gray-200'} flex flex-col shadow-xl transition-all ${isMobileMenuOpen ? 'open' : ''}`}>
+                    {/* Logo */}
+                    <div className="p-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+                                <span className="text-2xl">⚡</span>
+                            </div>
+                            <div className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>SKILLera</div>
+                        </div>
+                    </div>
 
-    <!-- Modal: add / rename branch -->
-    <div id="modal-branch" class="modal hidden">
-        <div class="modal-content">
-            <h3 id="modal-branch-title">Add main branch</h3>
-            <label>Name</label>
-            <input type="text" id="modal-branch-name" placeholder="e.g. Academics">
-            <div class="modal-actions">
-                <button type="button" id="modal-branch-save" class="btn btn-primary">Add</button>
-                <button type="button" id="modal-branch-cancel" class="btn btn-ghost">Cancel</button>
-                <button type="button" id="modal-branch-delete" class="btn btn-danger hidden">Delete branch</button>
-            </div>
-        </div>
-    </div>
+                    {/* Navigation Items */}
+                    <div className="flex-1 px-4 space-y-2 overflow-y-auto">
+                        {navItems.map((item, idx) => (
+                            <div
+                                key={item.id}
+                                onClick={() => {
+                                    setCurrentPage(item.id);
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className={`nav-item flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer ${
+                                    currentPage === item.id 
+                                        ? 'bg-orange-500 text-white' 
+                                        : isDark ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                                style={{animationDelay: `${idx * 0.1}s`}}
+                            >
+                                <span className="text-xl">{item.icon}</span>
+                                <span className="text-sm font-medium">{item.label}</span>
+                            </div>
+                        ))}
+                    </div>
 
-    <!-- Modal: edit skill progress -->
-    <div id="modal-skill" class="modal hidden">
-        <div class="modal-content">
-            <h3 id="modal-skill-title">Skill progress</h3>
-            <label>Progress (0–100)</label>
-            <input type="number" id="modal-skill-progress" min="0" max="100" value="0">
-            <label>Note (optional)</label>
-            <input type="text" id="modal-skill-note" placeholder="Short note">
-            <div class="modal-actions">
-                <button type="button" id="modal-skill-save" class="btn btn-primary">Save</button>
-                <button type="button" id="modal-skill-cancel" class="btn btn-ghost">Cancel</button>
-            </div>
-        </div>
-    </div>
+                    {/* Theme Toggle & Settings */}
+                    <div className={`p-4 space-y-2 border-t ${isDark ? 'border-gray-800' : 'border-gray-200'} no-print`}>
+                        <button
+                            onClick={toggleTheme}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${isDark ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'} hover:scale-105 transition-all`}
+                        >
+                            <span className="text-xl">{isDark ? '🌙' : '☀️'}</span>
+                            <span className="text-sm font-medium">{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+                        </button>
+                        
+                        <button
+                            onClick={onLogout}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${isDark ? 'bg-red-900/20 text-red-400' : 'bg-red-100 text-red-600'} hover:scale-105 transition-all`}
+                        >
+                            <span className="text-xl">🚪</span>
+                            <span className="text-sm font-medium">Logout</span>
+                        </button>
+                    </div>
 
-    <!-- Modal: add/edit timetable slot -->
-    <div id="modal-slot" class="modal hidden">
-        <div class="modal-content">
-            <h3 id="modal-slot-title">Add slot</h3>
-            <label>Day</label>
-            <select id="modal-slot-day">
-                <option value="0">Monday</option>
-                <option value="1">Tuesday</option>
-                <option value="2">Wednesday</option>
-                <option value="3">Thursday</option>
-                <option value="4">Friday</option>
-                <option value="5">Saturday</option>
-                <option value="6">Sunday</option>
-            </select>
-            <label>Start time</label>
-            <input type="time" id="modal-slot-start">
-            <label>End time</label>
-            <input type="time" id="modal-slot-end">
-            <label>Label</label>
-            <input type="text" id="modal-slot-label" placeholder="e.g. Math class">
-            <div class="modal-actions">
-                <button type="button" id="modal-slot-save" class="btn btn-primary">Save</button>
-                <button type="button" id="modal-slot-cancel" class="btn btn-ghost">Cancel</button>
-                <button type="button" id="modal-slot-delete" class="btn btn-danger hidden">Delete</button>
-            </div>
-        </div>
-    </div>
+                    {/* User Profile */}
+                    <div className={`p-4 border-t ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
+                        <div className="flex items-center gap-3">
+                            <img src={userData.avatar} className="w-10 h-10 rounded-full border-2 border-orange-500" alt="avatar" />
+                            <div className="flex-1 min-w-0">
+                                <div className={`text-sm font-medium truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{userData.username}</div>
+                                <div className="text-xs text-orange-500">{userData.rank}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-    <!-- Modal: add/edit broken trophy -->
-    <div id="modal-trophy" class="modal hidden">
-        <div class="modal-content">
-            <h3 id="modal-trophy-title">Add setback</h3>
-            <label>Title</label>
-            <input type="text" id="modal-trophy-title-input" placeholder="e.g. Missed deadline">
-            <label>What happened</label>
-            <textarea id="modal-trophy-what" placeholder="Brief description"></textarea>
-            <label>What I learned</label>
-            <textarea id="modal-trophy-learned" placeholder="Takeaway"></textarea>
-            <div class="modal-actions">
-                <button type="button" id="modal-trophy-save" class="btn btn-primary">Save</button>
-                <button type="button" id="modal-trophy-cancel" class="btn btn-ghost">Cancel</button>
-                <button type="button" id="modal-trophy-delete" class="btn btn-danger hidden">Delete</button>
-            </div>
-        </div>
-    </div>
+        function SkillTreePage({ isDark }) {
+            const [selectedSkill, setSelectedSkill] = useState(null);
+            const userData = loadFromStorage('user', defaultUserData);
 
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+            return (
+                <div className={`min-h-screen ${isDark ? 'bg-[#0f0f0f]' : 'bg-gray-50'} overflow-auto`}>
+                    {/* Header */}
+                    <div className="p-4 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div style={{animation: 'slideInLeft 0.6s ease-out'}}>
+                            <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Skill Tree</h1>
+                            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1`}>Master new dimensions of your aura</p>
+                        </div>
+                        <div className={`flex items-center gap-4 ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-full px-4 md:px-6 py-3 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-lg`}
+                             style={{animation: 'slideInRight 0.6s ease-out'}}>
+                            <img src={userData.avatar} className="w-10 h-10 rounded-full" alt="avatar" />
+                            <div>
+                                <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{userData.username}</div>
+                                <div className="text-xs text-orange-500">LEVEL {userData.level}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Skill Tree Canvas */}
+                    <div className="skill-tree-canvas relative h-[600px] flex items-center justify-center">
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex: 1}}>
+                            <defs>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            {/* Connection lines */}
+                            <line x1="600" y1="550" x2="300" y2="250" stroke="rgba(59,130,246,0.4)" strokeWidth="3" strokeDasharray="8 4" filter="url(#glow)" />
+                            <line x1="600" y1="550" x2="500" y2="250" stroke="rgba(16,185,129,0.4)" strokeWidth="3" strokeDasharray="8 4" filter="url(#glow)" />
+                            <line x1="600" y1="550" x2="700" y2="250" stroke="rgba(239,68,68,0.4)" strokeWidth="3" strokeDasharray="8 4" filter="url(#glow)" />
+                            <line x1="600" y1="550" x2="900" y2="250" stroke="rgba(249,115,22,0.4)" strokeWidth="3" strokeDasharray="8 4" filter="url(#glow)" />
+                        </svg>
+
+                        {/* Category Nodes */}
+                        {skillsData.map((category, idx) => (
+                            <div
+                                key={category.id}
+                                className="category-node absolute cursor-pointer tooltip"
+                                data-tooltip={`Click to explore ${category.name}`}
+                                style={{
+                                    left: category.position.x,
+                                    top: category.position.y,
+                                    animationDelay: `${idx * 0.5}s`,
+                                    zIndex: 10
+                                }}
+                                onClick={() => setSelectedSkill(category)}
+                            >
+                                <div
+                                    className="rounded-2xl px-6 py-4 border-2 backdrop-blur-sm"
+                                    style={{
+                                        backgroundColor: category.bgColor,
+                                        borderColor: category.color,
+                                        boxShadow: `0 0 30px ${category.color}50`
+                                    }}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">{category.icon}</span>
+                                        <div className="text-white text-sm font-semibold">{category.name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Sub-skills */}
+                        {skillsData.flatMap(category => 
+                            category.children.map((skill, idx) => (
+                                <div
+                                    key={`${category.id}-${idx}`}
+                                    className="skill-node absolute tooltip"
+                                    data-tooltip={`${skill.name} - Level ${skill.level}/${skill.maxLevel}`}
+                                    style={{
+                                        left: skill.position.x,
+                                        top: skill.position.y,
+                                        zIndex: 10
+                                    }}
+                                    onClick={() => setSelectedSkill(skill)}
+                                >
+                                    <div className={`rounded-xl px-4 py-2.5 border backdrop-blur-sm ${
+                                        skill.unlocked 
+                                            ? 'bg-gray-900 border-green-500' 
+                                            : 'bg-gray-900/50 border-gray-700 opacity-50'
+                                    }`}
+                                    style={skill.unlocked ? {boxShadow: '0 0 20px rgba(16,185,129,0.6)'} : {}}>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg">{skill.icon}</span>
+                                            <span className={`text-xs font-medium ${skill.unlocked ? 'text-white' : 'text-gray-500'}`}>
+                                                {skill.name}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+
+                        {/* Nova Core - Center */}
+                        <div className="absolute" style={{left: 540, top: 480, zIndex: 20}}>
+                            <div className="relative">
+                                <div className="w-28 h-28 rounded-full flex items-center justify-center"
+                                     style={{
+                                         background: 'radial-gradient(circle, rgba(255,87,34,0.4) 0%, rgba(255,87,34,0.1) 100%)',
+                                         animation: 'glow 2s ease-in-out infinite'
+                                     }}>
+                                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-2xl shimmer">
+                                        <span className="text-4xl">⚡</span>
+                                    </div>
+                                </div>
+                                <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2 text-center">
+                                    <div className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>NOVA CORE</div>
+                                    <div className="text-orange-500 text-xs font-medium">LEVEL {userData.level}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Skill Info Panel */}
+                    {selectedSkill && (
+                        <div className={`fixed bottom-4 right-4 ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-2xl p-6 w-full md:w-96 border ${isDark ? 'border-orange-500/30' : 'border-orange-500/50'} shadow-2xl`} 
+                             style={{zIndex: 100, animation: 'slideInRight 0.4s ease-out'}}>
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className={`${isDark ? 'text-white' : 'text-gray-900'} text-xl font-semibold`}>{selectedSkill.name}</h3>
+                                <button 
+                                    onClick={() => setSelectedSkill(null)}
+                                    className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} text-xl transition-colors`}
+                                >✕</button>
+                            </div>
+                            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm mb-4`}>
+                                {selectedSkill.description || 'Master this skill to unlock new abilities and earn experience points.'}
+                            </p>
+                            {selectedSkill.level !== undefined && (
+                                <>
+                                    <div className="space-y-2 mb-4">
+                                        <div className="flex justify-between text-sm">
+                                            <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Progress</span>
+                                            <span className="text-orange-500 font-semibold">Level {selectedSkill.level}/{selectedSkill.maxLevel}</span>
+                                        </div>
+                                        <div className={`w-full ${isDark ? 'bg-gray-800' : 'bg-gray-200'} rounded-full h-2`}>
+                                            <div 
+                                                className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-1000 shimmer"
+                                                style={{width: `${(selectedSkill.level / selectedSkill.maxLevel) * 100}%`}}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        <div className={`${isDark ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg p-3`}>
+                                            <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-xs`}>XP Earned</div>
+                                            <div className={`${isDark ? 'text-white' : 'text-gray-900'} text-lg font-semibold`}>{selectedSkill.xp}</div>
+                                        </div>
+                                        <div className={`${isDark ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg p-3`}>
+                                            <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-xs`}>Status</div>
+                                            <div className={`${isDark ? 'text-white' : 'text-gray-900'} text-lg font-semibold`}>{selectedSkill.unlocked ? '🔓 Unlocked' : '🔒 Locked'}</div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            <button className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold py-3 rounded-xl hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 active:scale-95">
+                                Practice Skill
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function ProfilePage({ isDark }) {
+            const userData = loadFromStorage('user', defaultUserData);
+            
+            return (
+                <div className={`min-h-screen ${isDark ? 'bg-[#0f0f0f]' : 'bg-gray-50'} overflow-auto p-4 md:p-8`}>
+                    <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-8`} 
+                        style={{animation: 'slideInLeft 0.6s ease-out'}}>Character Profile</h1>
+                    
+                    <div className="max-w-4xl space-y-6">
+                        {/* Profile Card */}
+                        <div className={`stat-card ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-2xl p-6 md:p-8 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-xl`}>
+                            <div className="flex flex-col md:flex-row items-start gap-6">
+                                <img src={userData.avatar} className="w-24 h-24 rounded-2xl border-2 border-orange-500 shadow-lg" alt="avatar" />
+                                <div className="flex-1">
+                                    <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>{userData.username}</h2>
+                                    <div className="flex flex-wrap gap-4 mb-4">
+                                        <div className={`${isDark ? 'bg-gray-800' : 'bg-gray-100'} px-4 py-2 rounded-lg`}>
+                                            <span className="text-orange-500 font-semibold">Level {userData.level}</span>
+                                        </div>
+                                        <div className={`${isDark ? 'bg-gray-800' : 'bg-gray-100'} px-4 py-2 rounded-lg`}>
+                                            <span className="text-yellow-500 font-semibold">{userData.rank}</span>
+                                        </div>
+                                    </div>
+                                    <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm space-y-1`}>
+                                        <div>📧 {userData.email}</div>
+                                        <div>📅 Joined {new Date(userData.joinDate).toLocaleDateString()}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Total XP', value: userData.totalXp.toLocaleString(), icon: '⚡', delay: 0.1 },
+                                { label: 'Skills Unlocked', value: '12', icon: '🎯', delay: 0.2 },
+                                { label: 'Missions Done', value: '48', icon: '✅', delay: 0.3 },
+                                { label: 'Days Active', value: '127', icon: '🔥', delay: 0.4 }
+                            ].map((stat, idx) => (
+                                <div key={idx} className={`stat-card ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl p-4 md:p-6 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-lg hover:scale-105 transition-transform`}
+                                     style={{animationDelay: `${stat.delay}s`}}>
+                                    <div className="text-3xl mb-2">{stat.icon}</div>
+                                    <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-xs md:text-sm mb-2`}>{stat.label}</div>
+                                    <div className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* XP Progress */}
+                        <div className={`${isDark ? 'bg-gray-900' : 'bg-white'} rounded-2xl p-6 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-xl`}>
+                            <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Progress to Next Level</h3>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Level {userData.level}</span>
+                                    <span className="text-orange-500 font-semibold">{userData.totalXp} / {(userData.level + 1) * 1000} XP</span>
+                                </div>
+                                <div className={`w-full ${isDark ? 'bg-gray-800' : 'bg-gray-200'} rounded-full h-3`}>
+                                    <div 
+                                        className="bg-gradient-to-r from-orange-500 to-red-500 h-3 rounded-full shimmer transition-all duration-1000"
+                                        style={{width: `${(userData.totalXp / ((userData.level + 1) * 1000)) * 100}%`}}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function MissionsPage({ isDark }) {
+            const [missions, setMissions] = useState(() => loadFromStorage('missions', defaultMissions));
+
+            useEffect(() => {
+                saveToStorage('missions', missions);
+            }, [missions]);
+
+            const toggleMission = (id) => {
+                setMissions(missions.map(m => 
+                    m.id === id ? {...m, completed: !m.completed} : m
+                ));
+            };
+
+            const completedCount = missions.filter(m => m.completed).length;
+            const totalXP = missions.filter(m => m.completed).reduce((sum, m) => sum + m.xp, 0);
+
+            return (
+                <div className={`min-h-screen ${isDark ? 'bg-[#0f0f0f]' : 'bg-gray-50'} overflow-auto p-4 md:p-8`}>
+                    <div className="mb-8" style={{animation: 'slideInLeft 0.6s ease-out'}}>
+                        <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>Daily Missions</h1>
+                        <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Complete missions to earn XP and level up!</p>
+                    </div>
+
+                    {/* Progress Summary */}
+                    <div className="max-w-4xl mb-6">
+                        <div className={`${isDark ? 'bg-gray-900' : 'bg-white'} rounded-2xl p-6 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-xl`}>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div>
+                                    <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm mb-1`}>Completed Today</div>
+                                    <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{completedCount}/{missions.length}</div>
+                                </div>
+                                <div>
+                                    <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm mb-1`}>XP Earned</div>
+                                    <div className="text-2xl font-bold text-orange-500">{totalXP}</div>
+                                </div>
+                                <div className="col-span-2 md:col-span-1">
+                                    <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm mb-2`}>Progress</div>
+                                    <div className={`w-full ${isDark ? 'bg-gray-800' : 'bg-gray-200'} rounded-full h-2`}>
+                                        <div 
+                                            className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-500"
+                                            style={{width: `${(completedCount / missions.length) * 100}%`}}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="max-w-4xl space-y-4">
+                        {missions.map((mission, idx) => (
+                            <div 
+                                key={mission.id}
+                                className={`mission-card ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl p-4 md:p-6 border transition-all cursor-pointer ${
+                                    mission.completed 
+                                        ? 'border-green-500/50 opacity-60' 
+                                        : isDark ? 'border-gray-800 hover:border-orange-500/50' : 'border-gray-200 hover:border-orange-500/50'
+                                } shadow-lg hover:shadow-xl hover:scale-[1.02]`}
+                                onClick={() => toggleMission(mission.id)}
+                                style={{animationDelay: `${idx * 0.1}s`}}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                                        mission.completed 
+                                            ? 'bg-green-500 border-green-500 scale-110' 
+                                            : isDark ? 'border-gray-600' : 'border-gray-300'
+                                    }`}>
+                                        {mission.completed && <span className="text-white text-sm md:text-base">✓</span>}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-lg md:text-xl">{mission.icon}</span>
+                                            <h3 className={`font-semibold text-sm md:text-base ${mission.completed ? (isDark ? 'text-gray-500' : 'text-gray-400') + ' line-through' : isDark ? 'text-white' : 'text-gray-900'}`}>
+                                                {mission.title}
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    <div className="bg-orange-500/20 px-3 md:px-4 py-2 rounded-lg flex-shrink-0">
+                                        <span className="text-orange-500 font-semibold text-sm md:text-base">+{mission.xp} XP</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function TimetablePage({ isDark }) {
+            const schedule = [
+                { time: '08:00 AM', task: 'Morning Study Session', color: 'bg-blue-500', duration: '2h' },
+                { time: '10:00 AM', task: 'Programming Practice', color: 'bg-green-500', duration: '2h' },
+                { time: '12:00 PM', task: 'Lunch Break', color: 'bg-yellow-500', duration: '1h' },
+                { time: '02:00 PM', task: 'Project Work', color: 'bg-purple-500', duration: '2h' },
+                { time: '04:00 PM', task: 'Exercise & Fitness', color: 'bg-red-500', duration: '1h' },
+                { time: '06:00 PM', task: 'Dinner & Relaxation', color: 'bg-orange-500', duration: '2h' },
+                { time: '08:00 PM', task: 'Review & Planning', color: 'bg-pink-500', duration: '1h' }
+            ];
+
+            return (
+                <div className={`min-h-screen ${isDark ? 'bg-[#0f0f0f]' : 'bg-gray-50'} overflow-auto p-4 md:p-8`}>
+                    <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-8`}
+                        style={{animation: 'slideInLeft 0.6s ease-out'}}>Daily Timetable</h1>
+                    
+                    <div className="max-w-4xl space-y-3">
+                        {schedule.map((item, idx) => (
+                            <div key={idx} 
+                                 className={`${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl p-4 md:p-6 border ${isDark ? 'border-gray-800' : 'border-gray-200'} flex items-center gap-4 md:gap-6 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer`}
+                                 style={{animation: 'slideInRight 0.5s ease-out', animationDelay: `${idx * 0.1}s`}}>
+                                <div className={`w-2 md:w-3 h-12 md:h-16 rounded-full ${item.color} flex-shrink-0`} />
+                                <div className="flex-1 min-w-0">
+                                    <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-xs md:text-sm mb-1 flex items-center gap-2`}>
+                                        <span>🕐 {item.time}</span>
+                                        <span className={`${isDark ? 'bg-gray-800' : 'bg-gray-100'} px-2 py-1 rounded text-xs`}>{item.duration}</span>
+                                    </div>
+                                    <div className={`${isDark ? 'text-white' : 'text-gray-900'} text-base md:text-lg font-semibold`}>{item.task}</div>
+                                </div>
+                                <button className={`${isDark ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'} p-2 md:p-3 rounded-lg hover:scale-110 transition-all flex-shrink-0`}>
+                                    <i className="fas fa-bell text-sm md:text-base"></i>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function DiaryPage({ isDark }) {
+            const [entries, setEntries] = useState(() => loadFromStorage('diaryEntries', [
+                { id: 1, date: new Date(Date.now() - 86400000).toISOString(), content: "Had a productive day! Completed all missions and learned about React hooks. Feeling motivated! 🚀", mood: "😊" },
+                { id: 2, date: new Date(Date.now() - 172800000).toISOString(), content: "Started working on the skill tree visualization. The animations are coming together nicely!", mood: "🤩" }
+            ]));
+            const [currentEntry, setCurrentEntry] = useState('');
+
+            useEffect(() => {
+                saveToStorage('diaryEntries', entries);
+            }, [entries]);
+
+            const saveEntry = () => {
+                if (currentEntry.trim()) {
+                    const newEntry = {
+                        id: Date.now(),
+                        date: new Date().toISOString(),
+                        content: currentEntry,
+                        mood: "😊"
+                    };
+                    setEntries([newEntry, ...entries]);
+                    setCurrentEntry('');
+                }
+            };
+
+            return (
+                <div className={`min-h-screen ${isDark ? 'bg-[#0f0f0f]' : 'bg-gray-50'} overflow-auto p-4 md:p-8`}>
+                    <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-8`}
+                        style={{animation: 'slideInLeft 0.6s ease-out'}}>Daily Diary</h1>
+                    
+                    <div className="max-w-4xl space-y-6">
+                        {/* New Entry */}
+                        <div className={`${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl p-6 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-xl`}>
+                            <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm mb-4 flex items-center gap-2`}>
+                                <span>📅 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            </div>
+                            <textarea 
+                                value={currentEntry}
+                                onChange={(e) => setCurrentEntry(e.target.value)}
+                                className={`w-full ${isDark ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'} p-4 rounded-lg border ${isDark ? 'border-gray-700 focus:border-orange-500' : 'border-gray-300 focus:border-orange-500'} outline-none min-h-[200px] transition-all`}
+                                placeholder="Write your thoughts for today..."
+                            />
+                            <button 
+                                onClick={saveEntry}
+                                className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 active:scale-95">
+                                💾 Save Entry
+                            </button>
+                        </div>
+
+                        {/* Previous Entries */}
+                        <div className="space-y-4">
+                            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Previous Entries</h2>
+                            {entries.map((entry, idx) => (
+                                <div key={entry.id} 
+                                     className={`${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl p-6 border ${isDark ? 'border-gray-800' : 'border-gray-200'} shadow-lg hover:shadow-xl transition-all`}
+                                     style={{animation: 'fadeIn 0.5s ease-out', animationDelay: `${idx * 0.1}s`}}>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                                            {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                        </div>
+                                        <span className="text-2xl">{entry.mood}</span>
+                                    </div>
+                                    <div className={isDark ? 'text-white' : 'text-gray-900'}>{entry.content}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function AchievementsPage({ isDark }) {
+            const achievements = [
+                { id: 1, name: "First Steps", description: "Complete your first mission", icon: "🌱", unlocked: true, date: "2024-01-15" },
+                { id: 2, name: "Knowledge Seeker", description: "Unlock 5 skills", icon: "📚", unlocked: true, date: "2024-01-20" },
+                { id: 3, name: "Dedicated Learner", description: "Practice for 10 hours", icon: "⚡", unlocked: true, date: "2024-02-01" },
+                { id: 4, name: "Week Warrior", description: "Complete missions 7 days in a row", icon: "🔥", unlocked: false },
+                { id: 5, name: "Master of All", description: "Max out 5 different skills", icon: "👑", unlocked: false },
+                { id: 6, name: "Legend", description: "Reach level 50", icon: "💎", unlocked: false }
+            ];
+
+            return (
+                <div className={`min-h-screen ${isDark ? 'bg-[#0f0f0f]' : 'bg-gray-50'} overflow-auto p-4 md:p-8`}>
+                    <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-8`}
+                        style={{animation: 'slideInLeft 0.6s ease-out'}}>Achievements</h1>
+                    
+                    <div className="max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {achievements.map((achievement, idx) => (
+                            <div key={achievement.id} 
+                                 className={`stat-card ${isDark ? 'bg-gray-900' : 'bg-white'} rounded-xl p-6 border ${
+                                     achievement.unlocked 
+                                         ? 'border-green-500/50' 
+                                         : isDark ? 'border-gray-800' : 'border-gray-200'
+                                 } shadow-lg hover:shadow-xl hover:scale-105 transition-all ${!achievement.unlocked ? 'opacity-60' : ''}`}
+                                 style={{animationDelay: `${idx * 0.1}s`}}>
+                                <div className="text-center">
+                                    <div className={`text-5xl mb-4 ${achievement.unlocked ? 'animate-bounce' : 'grayscale'}`}>
+                                        {achievement.icon}
+                                    </div>
+                                    <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>
+                                        {achievement.name}
+                                    </h3>
+                                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                                        {achievement.description}
+                                    </p>
+                                    {achievement.unlocked ? (
+                                        <div className="text-xs text-green-500">
+                                            ✓ Unlocked on {new Date(achievement.date).toLocaleDateString()}
+                                        </div>
+                                    ) : (
+                                        <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            🔒 Locked
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== MAIN APP ====================
+        function App() {
+            const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('user'));
+            const [currentPage, setCurrentPage] = useState('home');
+            const [isDark, setIsDark] = useState(() => loadFromStorage('theme', 'dark') === 'dark');
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+            useEffect(() => {
+                document.body.className = isDark ? 'dark' : 'light';
+                saveToStorage('theme', isDark ? 'dark' : 'light');
+            }, [isDark]);
+
+            const handleLogin = (user) => {
+                saveToStorage('user', user);
+                setIsLoggedIn(true);
+            };
+
+            const handleLogout = () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.clear();
+                    setIsLoggedIn(false);
+                }
+            };
+
+            const toggleTheme = () => setIsDark(!isDark);
+
+            const exportData = () => {
+                const data = {
+                    user: loadFromStorage('user', defaultUserData),
+                    missions: loadFromStorage('missions', defaultMissions),
+                    diaryEntries: loadFromStorage('diaryEntries', []),
+                    theme: loadFromStorage('theme', 'dark'),
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `skillera-backup-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            if (!isLoggedIn) {
+                return <LoginPage onLogin={handleLogin} />;
+            }
+
+            const renderPage = () => {
+                switch(currentPage) {
+                    case 'home': return <SkillTreePage isDark={isDark} />;
+                    case 'profile': return <ProfilePage isDark={isDark} />;
+                    case 'missions': return <MissionsPage isDark={isDark} />;
+                    case 'timetable': return <TimetablePage isDark={isDark} />;
+                    case 'diary': return <DiaryPage isDark={isDark} />;
+                    case 'achievements': return <AchievementsPage isDark={isDark} />;
+                    default: return <SkillTreePage isDark={isDark} />;
+                }
+            };
+
+            return (
+                <div className="flex">
+                    {/* Mobile Menu Button */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="md:hidden fixed top-4 left-4 z-[1001] bg-orange-500 text-white p-3 rounded-lg shadow-lg no-print"
+                    >
+                        <i className={`fas fa-${isMobileMenuOpen ? 'times' : 'bars'}`}></i>
+                    </button>
+
+                    {/* Overlay for mobile */}
+                    {isMobileMenuOpen && (
+                        <div 
+                            className="md:hidden fixed inset-0 bg-black/50 z-[999]"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        />
+                    )}
+
+                    <Navigation 
+                        currentPage={currentPage} 
+                        setCurrentPage={setCurrentPage} 
+                        isDark={isDark}
+                        toggleTheme={toggleTheme}
+                        onLogout={handleLogout}
+                        isMobileMenuOpen={isMobileMenuOpen}
+                        setIsMobileMenuOpen={setIsMobileMenuOpen}
+                    />
+                    
+                    <div className="main-content ml-0 md:ml-64 flex-1 min-h-screen">
+                        {renderPage()}
+                    </div>
+
+                    {/* Export Data Button */}
+                    <button
+                        onClick={exportData}
+                        className={`no-print fixed bottom-4 right-4 ${isDark ? 'bg-gray-800' : 'bg-white'} text-orange-500 p-4 rounded-full shadow-lg hover:scale-110 transition-all z-50 tooltip`}
+                        data-tooltip="Export Data"
+                    >
+                        <i className="fas fa-download text-xl"></i>
+                    </button>
+                </div>
+            );
+        }
+
+        // ==================== RENDER ====================
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
